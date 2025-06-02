@@ -3,7 +3,7 @@ require('dotenv').config();
 
 // Create PostgreSQL pool
 const db = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/milestone_tracker',
+  connectionString: process.env.DATABASE_URL || 'postgresql://fibre_database_user:fVGTTXzWyvmmpWX4NJGtxbnPH4yfz4KO@dpg-d0uo00adbo4c73bp4250-a.oregon-postgres.render.com/fibre_database',
   max: 10,
   idleTimeoutMillis: 10000,
 });
