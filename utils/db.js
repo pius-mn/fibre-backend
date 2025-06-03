@@ -1,49 +1,48 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Create PostgreSQL pool
 const db = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://fibre_database_user:fVGTTXzWyvmmpWX4NJGtxbnPH4yfz4KO@dpg-d0uo00adbo4c73bp4250-a.oregon-postgres.render.com/fibre_database',
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 2000
 });
 
-// Test DB connection
+// Test connection
 (async () => {
   try {
-    const client = await db.connect();
-    console.log('✅ Connected to PostgreSQL database');
-    client.release();
+    await db.query('SELECT 1');
+    console.log('PostgreSQL connected');
   } catch (err) {
-    console.error('❌ Error connecting to PostgreSQL:', err.message);
+    console.error('DB connection failed:', err.message);
     process.exit(1);
   }
 })();
 
-// Query helper
-const queryDB = async (query, params = []) => {
-  const client = await db.connect();
-  try {
-    const res = await client.query(query, params);
-    return res.rows;
-  } catch (err) {
-    console.error('❌ Database query error:', err.message);
-    throw err;
-  } finally {
-    client.release();
-  }
-};
+// Heartbeat monitor
+setInterval(() => {
+  db.query('SELECT 1').catch(err => 
+    console.error('DB heartbeat failed:', err.message)
+  );
+}, 60000);
+
+// Simplified query helper
+const queryDB = (query, params) => 
+  db.query(query, params).then(res => res.rows);
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  try {
-    await db.end();
-    console.log('✅ PostgreSQL pool closed gracefully');
-  } catch (err) {
-    console.error('❌ Error closing PostgreSQL pool:', err.message);
-  } finally {
-    process.exit(0);
-  }
+['SIGINT', 'SIGTERM'].forEach(signal => {
+  process.on(signal, async () => {
+    try {
+      await db.end();
+      console.log('PostgreSQL pool closed');
+      process.exit(0);
+    } catch (err) {
+      console.error('Shutdown error:', err.message);
+      process.exit(1);
+    }
+  });
 });
 
-module.exports = { db, queryDB };
+module.exports = { queryDB };

@@ -28,16 +28,7 @@ router.get('/projects', roleMiddleware(['admin']), async (req, res) => {
   
 
 
-// Get all users for the admin
-router.get('/all-users', roleMiddleware(['admin']), async (req, res) => {
-    try {
-      const result = await queryDB(`SELECT * FROM users WHERE role = 'user'`);
-      res.json(result);
-    } catch (error) {
-      console.error('Database error:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
+
   
 
 // Assign a project to a user (Admin only)
@@ -71,6 +62,7 @@ router.put('/assign/:projectId', roleMiddleware(['admin']), async (req, res) => 
     }
   });
   
-
+ 
+  
 
 module.exports = router;

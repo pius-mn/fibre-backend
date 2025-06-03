@@ -5,15 +5,17 @@ const crypto = require('crypto');
 const { queryDB } = require('../utils/db'); // Postgres version of queryDB
 const router = express.Router();
 
-// Registration
+
 router.post('/register', async (req, res) => {
-  const { username, password, role } = req.body;
-  if (!username || !password || !role) {
-    return res.status(400).json({ message: 'Please provide all required fields.' });
+  const { username, password } = req.body;
+  const role = 'user';
+
+  if (!username?.trim() || !password?.trim()) {
+    return res.status(400).json({ message: 'Username and password are required.' });
   }
 
   try {
-    const existingUser = await queryDB('SELECT * FROM users WHERE username = $1', [username]);
+    const existingUser = await queryDB('SELECT 1 FROM users WHERE username = $1', [username]);
     if (existingUser.length > 0) {
       return res.status(409).json({ message: 'Username already exists.' });
     }
@@ -27,10 +29,11 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully.', userId: inserted[0].id });
   } catch (error) {
-    console.error('Error registering user:', error);
+    console.error('Error registering user:', error.message);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
+
 
 // Login
 router.post('/login', async (req, res) => {
