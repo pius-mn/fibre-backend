@@ -6,7 +6,7 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 2000
+  connectionTimeoutMillis: 20000
 });
 
 // Test connection

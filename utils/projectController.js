@@ -25,12 +25,20 @@ const getAllProjects = async (req, res) => {
     let query, values;
     if (req.user?.role === 'user') {
       query = `
-        SELECT * 
-        FROM projects 
-        WHERE assigned_user_id = $1`;
+        SELECT p.*, u.username AS assigned_username 
+        FROM projects p
+        LEFT JOIN users u ON p.assigned_user_id = u.id
+        WHERE p.assigned_user_id = $1
+        ORDER BY p.id`;
       values = [req.user.userId];
     } else {
-      query = 'SELECT * FROM projects';
+      query = `
+        SELECT p.*, u.username AS assigned_username 
+        FROM projects p
+        LEFT JOIN users u ON p.assigned_user_id = u.id
+        ORDER BY 
+          CASE WHEN p.assigned_user_id IS NULL THEN 0 ELSE 1 END, 
+          p.id`;
       values = [];
     }
 
