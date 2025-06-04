@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { queryDB } = require("../utils/db");
+const authenticateToken = require('../middleware/auth');
+const roleMiddleware = require('../middleware/roleMiddleware');
 router.use(authenticateToken);
 
 router.get("", roleMiddleware(['admin','editor']),async (req, res) => {
